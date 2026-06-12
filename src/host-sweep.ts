@@ -44,6 +44,7 @@ import {
   type ContainerState,
 } from './db/session-db.js';
 import { log } from './log.js';
+import { IDLE_TIMEOUT } from './config.js';
 import { openInboundDb, openOutboundDb, openOutboundDbRw, inboundDbPath, heartbeatPath } from './session-manager.js';
 import { isContainerRunning, killContainer, wakeContainer } from './container-runner.js';
 import type { Session } from './types.js';
@@ -62,8 +63,10 @@ export function parseSqliteUtc(s: string): number {
 const SWEEP_INTERVAL_MS = 60_000;
 // Absolute idle ceiling for a running container. If the heartbeat file hasn't
 // been touched in this long, the container is either stuck or doing genuinely
-// nothing — kill and restart on the next inbound.
-export const ABSOLUTE_CEILING_MS = 30 * 60 * 1000;
+// nothing — kill and restart on the next inbound. Sourced from IDLE_TIMEOUT
+// (env: IDLE_TIMEOUT, default 30 min) so operators on always-on hosts can keep
+// containers warm longer and avoid cold-start latency.
+export const ABSOLUTE_CEILING_MS = IDLE_TIMEOUT;
 // Stuck tolerance window applied per 'processing' claim — "did we see any
 // signs of life since this message was claimed?"
 export const CLAIM_STUCK_MS = 60 * 1000;

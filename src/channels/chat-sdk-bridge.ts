@@ -17,6 +17,7 @@ import {
   type Adapter,
   type ConcurrencyStrategy,
   type Message as ChatMessage,
+  type Attachment,
 } from 'chat';
 import { log } from '../log.js';
 import { SqliteStateAdapter } from '../state-sqlite.js';
@@ -119,6 +120,56 @@ export function splitForLimit(text: string, limit: number): string[] {
   return chunks;
 }
 
+/**
+ * Serialize inbound attachments, downloading their bytes so the host can stage
+ * them to the session inbox. Two adapter shapes exist:
+ *
+ *   - `fetchData()` — auth-aware fetch (Slack private URLs, etc.). Preferred.
+ *   - `url` only — a public CDN link with no fetchData (e.g. Discord). We fetch
+ *     it here; otherwise the entry reaches the host with no `data`, and
+ *     `extractAttachmentFiles` skips it (it only stages entries that carry
+ *     `data`), so the agent is told a file exists but can never read it.
+ *
+ * `url` is always preserved on the entry as a last-resort fallback when neither
+ * download path yields bytes.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function enrichAttachments(attachments: Attachment[]): Promise<Record<string, any>[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const enriched: Record<string, any>[] = [];
+  for (const att of attachments) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const entry: Record<string, any> = {
+      type: att.type,
+      name: att.name,
+      mimeType: att.mimeType,
+      size: att.size,
+      url: att.url,
+      width: (att as unknown as Record<string, unknown>).width,
+      height: (att as unknown as Record<string, unknown>).height,
+    };
+    if (att.fetchData) {
+      try {
+        const buffer = await att.fetchData();
+        entry.data = buffer.toString('base64');
+      } catch (err) {
+        log.warn('Failed to download attachment', { type: att.type, err });
+      }
+    } else if (att.url) {
+      try {
+        const res = await fetch(att.url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const buffer = Buffer.from(await res.arrayBuffer());
+        entry.data = buffer.toString('base64');
+      } catch (err) {
+        log.warn('Failed to download attachment from url', { type: att.type, url: att.url, err });
+      }
+    }
+    enriched.push(entry);
+  }
+  return enriched;
+}
+
 export function createChatSdkBridge(config: ChatSdkBridgeConfig): ChannelAdapter {
   const { adapter } = config;
   const transformText = (t: string): string => (config.transformOutboundText ? config.transformOutboundText(t) : t);
@@ -137,28 +188,7 @@ export function createChatSdkBridge(config: ChatSdkBridgeConfig): ChannelAdapter
 
     // Download attachment data before serialization loses fetchData()
     if (message.attachments && message.attachments.length > 0) {
-      const enriched = [];
-      for (const att of message.attachments) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const entry: Record<string, any> = {
-          type: att.type,
-          name: att.name,
-          mimeType: att.mimeType,
-          size: att.size,
-          width: (att as unknown as Record<string, unknown>).width,
-          height: (att as unknown as Record<string, unknown>).height,
-        };
-        if (att.fetchData) {
-          try {
-            const buffer = await att.fetchData();
-            entry.data = buffer.toString('base64');
-          } catch (err) {
-            log.warn('Failed to download attachment', { type: att.type, err });
-          }
-        }
-        enriched.push(entry);
-      }
-      serialized.attachments = enriched;
+      serialized.attachments = await enrichAttachments(message.attachments);
     }
 
     // Extract reply context via platform-specific hook
