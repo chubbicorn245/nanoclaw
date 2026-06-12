@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Adapter, AdapterPostableMessage, RawMessage } from 'chat';
+import type { Adapter, AdapterPostableMessage, Attachment, RawMessage } from 'chat';
 
-import { createChatSdkBridge, splitForLimit } from './chat-sdk-bridge.js';
+import { createChatSdkBridge, enrichAttachments, splitForLimit } from './chat-sdk-bridge.js';
 
 vi.mock('../webhook-server.js', () => ({
   registerWebhookAdapter: vi.fn(),
@@ -348,5 +348,70 @@ describe('createChatSdkBridge.deliver — display cards (send_card)', () => {
     expect(calls).toHaveLength(1);
     const msg = calls[0].message as { markdown?: string };
     expect(msg.markdown).toBe('plain hello');
+  });
+});
+
+describe('enrichAttachments', () => {
+  function makeAttachment(partial: Partial<Attachment>): Attachment {
+    return { type: 'file', ...partial } as Attachment;
+  }
+
+  it('downloads bytes from a url-only attachment (Discord case) and stages them as base64', async () => {
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(Buffer.from('hello from message.txt'), { status: 200 })) as typeof fetch;
+    try {
+      const [entry] = await enrichAttachments([
+        makeAttachment({ name: 'message.txt', mimeType: 'text/plain', url: 'https://cdn.discord/x.txt' }),
+      ]);
+      expect(entry.data).toBe(Buffer.from('hello from message.txt').toString('base64'));
+      expect(entry.url).toBe('https://cdn.discord/x.txt');
+      expect(entry.name).toBe('message.txt');
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('prefers fetchData() over url when both are present', async () => {
+    const realFetch = globalThis.fetch;
+    let fetchCalled = false;
+    globalThis.fetch = (async () => {
+      fetchCalled = true;
+      return new Response(Buffer.from('from-url'), { status: 200 });
+    }) as typeof fetch;
+    try {
+      const [entry] = await enrichAttachments([
+        makeAttachment({
+          name: 'a.png',
+          url: 'https://cdn/x.png',
+          fetchData: async () => Buffer.from('from-fetchData'),
+        }),
+      ]);
+      expect(entry.data).toBe(Buffer.from('from-fetchData').toString('base64'));
+      expect(fetchCalled).toBe(false);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('keeps url as a fallback and omits data when the url download fails', async () => {
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () => new Response('nope', { status: 404 })) as typeof fetch;
+    try {
+      const [entry] = await enrichAttachments([
+        makeAttachment({ name: 'message.txt', url: 'https://cdn/gone.txt' }),
+      ]);
+      expect(entry.data).toBeUndefined();
+      expect(entry.url).toBe('https://cdn/gone.txt');
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('leaves an attachment with neither fetchData nor url as metadata-only', async () => {
+    const [entry] = await enrichAttachments([makeAttachment({ name: 'mystery', size: 10 })]);
+    expect(entry.data).toBeUndefined();
+    expect(entry.url).toBeUndefined();
+    expect(entry.name).toBe('mystery');
   });
 });
