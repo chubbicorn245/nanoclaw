@@ -1,0 +1,1 @@
+- [Node version requirement](node-version-requirement.md) — must run on Node 22; node@26 breaks better-sqlite3 build

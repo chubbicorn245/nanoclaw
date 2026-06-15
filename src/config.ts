@@ -13,6 +13,7 @@ const envConfig = readEnvFile([
   'ONECLI_API_KEY',
   'TZ',
   'IDLE_TIMEOUT',
+  'ALLOWLIST_ONLY_CHANNELS',
 ]);
 
 export const ASSISTANT_NAME = process.env.ASSISTANT_NAME || envConfig.ASSISTANT_NAME || 'Andy';
@@ -50,6 +51,19 @@ export const MAX_MESSAGES_PER_PROMPT = Math.max(1, parseInt(process.env.MAX_MESS
 // per-claim stuck rule, so this only governs idle reaping. 30 min default.
 export const IDLE_TIMEOUT = parseInt(process.env.IDLE_TIMEOUT || envConfig.IDLE_TIMEOUT || '1800000', 10);
 export const MAX_CONCURRENT_CONTAINERS = Math.max(1, parseInt(process.env.MAX_CONCURRENT_CONTAINERS || '5', 10) || 5);
+
+// Channels that engage ONLY pre-wired senders. A message from any sender
+// without an existing messaging group is dropped silently — no auto-create,
+// no owner approval ping. Use for "whole-inbox" channels like local-mode
+// iMessage, where the bot reads the operator's personal account and would
+// otherwise prompt for every stranger who texts it. Comma-separated channel
+// types (e.g. "imessage"). Default empty — no behavior change for any channel.
+export const ALLOWLIST_ONLY_CHANNELS = new Set(
+  (process.env.ALLOWLIST_ONLY_CHANNELS || envConfig.ALLOWLIST_ONLY_CHANNELS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+);
 
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

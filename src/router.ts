@@ -20,6 +20,7 @@
 import { getChannelAdapter } from './channels/channel-registry.js';
 import { gateCommand } from './command-gate.js';
 import { getAgentGroup } from './db/agent-groups.js';
+import { ALLOWLIST_ONLY_CHANNELS } from './config.js';
 import { recordDroppedMessage } from './db/dropped-messages.js';
 import {
   createMessagingGroup,
@@ -186,6 +187,18 @@ export async function routeInbound(event: InboundEvent): Promise<void> {
   let mg: MessagingGroup;
   let agentCount: number;
   if (!found) {
+    // Allowlist-only channels (e.g. local-mode iMessage, which reads the
+    // operator's entire account inbox) must not auto-create + escalate for
+    // every new sender — that would ping the owner for every stranger who
+    // happens to text the account. Only senders with a pre-wired messaging
+    // group engage; all others are dropped silently here.
+    if (ALLOWLIST_ONLY_CHANNELS.has(event.channelType)) {
+      log.debug('Dropped message from unwired sender on allowlist-only channel', {
+        channelType: event.channelType,
+        platformId: event.platformId,
+      });
+      return;
+    }
     // No messaging_groups row. Auto-create only when the message warrants
     // attention (the bot was addressed — @mention or DM). Plain chatter in
     // channels we merely sit in stays silent — no row, no DB writes.
