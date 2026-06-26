@@ -24,11 +24,11 @@ importers:
         specifier: 11.10.0
         version: 11.10.0
       chat:
-        specifier: ^4.24.0
-        version: 4.26.0
+        specifier: 4.29.0
+        version: 4.29.0(zod@4.4.3)
       chat-adapter-imessage:
         specifier: 0.1.1
-        version: 0.1.1(chat@4.26.0)(typescript@5.9.3)
+        version: 0.1.1(chat@4.29.0(zod@4.4.3))(typescript@5.9.3)(zod@4.4.3)
       cron-parser:
         specifier: 5.5.0
         version: 5.5.0
@@ -80,6 +80,10 @@ packages:
 
   '@chat-adapter/shared@4.26.0':
     resolution: {integrity: sha512-YD0MGktFXrArUqTBsyPfL5vkdD1WBS58PAWO0oVrMQAMmPxpAXfWGjBtZCkf3y8R8Svb0uVuVXiMZSForaEnMQ==}
+
+  '@chat-adapter/shared@4.31.0':
+    resolution: {integrity: sha512-vT/0S/LKSU5QTz5xJNWdiGp1jl55x0o8Z9I2VqlHfwjOKxVR87z++bQjXlE99w6BAxZjSYhWErlveyKo4LiDGg==}
+    engines: {node: '>=20'}
 
   '@clack/core@1.2.0':
     resolution: {integrity: sha512-qfxof/3T3t9DPU/Rj3OmcFyZInceqj/NVtO9rwIuJqCUgh32gwPjpFQQp/ben07qKlhpwq7GzfWpST4qdJ5Drg==}
@@ -795,8 +799,8 @@ packages:
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
 
-  axios@1.17.0:
-    resolution: {integrity: sha512-J8SwNxprqqpbfenehxWYXE7CW+wM1BB4w3+N+g+/Wx40xM4rsLrfPmHHxSWIxJLYDgSY/HqlFPIYb2/S3rxafw==}
+  axios@1.18.1:
+    resolution: {integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==}
 
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}
@@ -814,8 +818,8 @@ packages:
   better-sqlite3@11.10.0:
     resolution: {integrity: sha512-EwhOpyXiOEL/lKzHz9AW1msWFNzGc/z+LzeB3/jnFJpxu+th2yqvzsSWas1v9jgs9+xiXJcD5A8CJxAG2TaghQ==}
 
-  better-sqlite3@12.10.0:
-    resolution: {integrity: sha512-CyzaZRQKyHkB2ZInfTTl2nvT33EbDpjkLEbE8/Zck3Ll6O0qqvuGdrJ45HgtH+HykRg88ITY3AdreBGN70aBSQ==}
+  better-sqlite3@12.11.1:
+    resolution: {integrity: sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==}
     engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
 
   big-integer@1.6.52:
@@ -871,6 +875,30 @@ packages:
 
   chat@4.26.0:
     resolution: {integrity: sha512-QToDnIEGpyb8yQA6YLMHOSRK30YVk4RtsyFyuWFYyB2c4jQlyIrSWtwVK7qyvmvqzQp9uDwCdJRAhS8GtCHAGQ==}
+
+  chat@4.29.0:
+    resolution: {integrity: sha512-KdPfzaie5ivYytyRICTERg5xT+LeCbYefokvNAqTHe92eqkFaoTMXXkSitikxJVWhZIb2YoXF1b9UZHyzSzKzw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      ai: ^6.0.182
+      zod: ^3.0.0 || ^4.0.0
+    peerDependenciesMeta:
+      ai:
+        optional: true
+      zod:
+        optional: true
+
+  chat@4.31.0:
+    resolution: {integrity: sha512-F6oJq9JUraLFkITS96/NKgwZwBfZX8aOwOj5qMs5NNwnOGHrSXZ5+osK+EA4HjzfyUEDfFTNiOSmyzgtFLpuWg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      ai: ^6.0.182
+      zod: ^3.0.0 || ^4.0.0
+    peerDependenciesMeta:
+      ai:
+        optional: true
+      zod:
+        optional: true
 
   chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
@@ -945,8 +973,8 @@ packages:
   discord-api-types@0.37.120:
     resolution: {integrity: sha512-7xpNK0EiWjjDFp2nAhHXezE4OUWm7s1zhc/UXXN6hnFFU8dfoPHgV0Hx0RPiCa3ILRpdeh152icc68DGCyXYIw==}
 
-  discord-api-types@0.38.48:
-    resolution: {integrity: sha512-WFUE/2o0lBlLeCQonQ+Pu2RqHAqbytBJ2RlXR91gzk05InSS6k9ShzzLYoymrA4c2oRgRKGE7/VqQJNNdGWSxQ==}
+  discord-api-types@0.38.49:
+    resolution: {integrity: sha512-XnqcWmnFZFAE8ZM8SHAw9DIV8D3Or00rMQ8iQLotrEA2PmXhl+ykaf6L6q4l474hrSUH1JaYcv+iOMRWp2p6Tg==}
 
   discord-interactions@4.4.0:
     resolution: {integrity: sha512-jjJx8iwAeJcj8oEauV43fue9lNqkf38fy60aSs2+G8D1nJmDxUIrk08o3h0F3wgwuBWWJUZO+X/VgfXsxpCiJA==}
@@ -963,8 +991,8 @@ packages:
   end-of-stream@1.4.5:
     resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
 
-  engine.io-client@6.6.5:
-    resolution: {integrity: sha512-QCwxUDULPlXv8F6tqMMKx5dNkTe6OaBYRMPYeXKBlyOoKvAmE0ac6pW7fFhSscJ/5SI7666/U/B+MElbsrJlIg==}
+  engine.io-client@6.6.6:
+    resolution: {integrity: sha512-iY6QdftLQ9pyiPoX082bpf/u1UewnOaJrtJIF9T0++QB34lZrj0uP+Q/bj8AlUsAxqhnkTV2BS8SBZSxOmoV5Q==}
 
   engine.io-parser@5.2.3:
     resolution: {integrity: sha512-HqD3yTBfnBxIrbnM1DoD6Pcq8NECnh8d4As1Qgh0z5Gg3jRRIqijury0CL3ghu/edArpUYiYqQiDUQBIs4np3Q==}
@@ -1891,18 +1919,6 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
-  ws@8.20.1:
-    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
@@ -1949,6 +1965,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@chat-adapter/shared@4.31.0(zod@4.4.3)':
+    dependencies:
+      chat: 4.31.0(zod@4.4.3)
+    transitivePeerDependencies:
+      - ai
+      - supports-color
+      - zod
+
   '@clack/core@1.2.0':
     dependencies:
       fast-wrap-ansi: 0.1.6
@@ -1966,7 +1990,7 @@ snapshots:
       '@discordjs/formatters': 0.6.2
       '@discordjs/util': 1.2.0
       '@sapphire/shapeshift': 4.0.0
-      discord-api-types: 0.38.48
+      discord-api-types: 0.38.49
       fast-deep-equal: 3.1.3
       ts-mixer: 6.0.4
       tslib: 2.8.1
@@ -1977,7 +2001,7 @@ snapshots:
 
   '@discordjs/formatters@0.6.2':
     dependencies:
-      discord-api-types: 0.38.48
+      discord-api-types: 0.38.49
 
   '@discordjs/rest@2.6.1':
     dependencies:
@@ -1986,14 +2010,14 @@ snapshots:
       '@sapphire/async-queue': 1.5.5
       '@sapphire/snowflake': 3.5.5
       '@vladfrangu/async_event_emitter': 2.4.7
-      discord-api-types: 0.38.48
+      discord-api-types: 0.38.49
       magic-bytes.js: 1.13.0
       tslib: 2.8.1
       undici: 6.24.1
 
   '@discordjs/util@1.2.0':
     dependencies:
-      discord-api-types: 0.38.48
+      discord-api-types: 0.38.49
 
   '@discordjs/ws@1.2.3':
     dependencies:
@@ -2003,7 +2027,7 @@ snapshots:
       '@sapphire/async-queue': 1.5.5
       '@types/ws': 8.18.1
       '@vladfrangu/async_event_emitter': 2.4.7
-      discord-api-types: 0.38.48
+      discord-api-types: 0.38.49
       tslib: 2.8.1
       ws: 8.21.0
     transitivePeerDependencies:
@@ -2272,7 +2296,7 @@ snapshots:
 
   '@photon-ai/advanced-imessage-kit@1.16.0(typescript@5.9.3)':
     dependencies:
-      axios: 1.17.0
+      axios: 1.18.1
       consola: 3.4.2
       form-data: 4.0.6
       reflect-metadata: 0.2.2
@@ -2290,7 +2314,7 @@ snapshots:
     dependencies:
       node-typedstream: 1.4.1
     optionalDependencies:
-      better-sqlite3: 12.10.0
+      better-sqlite3: 12.11.1
 
   '@rolldown/binding-android-arm64@1.0.0-rc.15':
     optional: true
@@ -2563,7 +2587,7 @@ snapshots:
 
   asynckit@0.4.0: {}
 
-  axios@1.17.0:
+  axios@1.18.1:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.6
@@ -2586,7 +2610,7 @@ snapshots:
       bindings: 1.5.0
       prebuild-install: 7.1.3
 
-  better-sqlite3@12.10.0:
+  better-sqlite3@12.11.1:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.3
@@ -2640,18 +2664,20 @@ snapshots:
 
   character-entities@2.0.2: {}
 
-  chat-adapter-imessage@0.1.1(chat@4.26.0)(typescript@5.9.3):
+  chat-adapter-imessage@0.1.1(chat@4.29.0(zod@4.4.3))(typescript@5.9.3)(zod@4.4.3):
     dependencies:
-      '@chat-adapter/shared': 4.26.0
+      '@chat-adapter/shared': 4.31.0(zod@4.4.3)
       '@photon-ai/advanced-imessage-kit': 1.16.0(typescript@5.9.3)
       '@photon-ai/imessage-kit': 2.1.2
-      chat: 4.26.0
+      chat: 4.29.0(zod@4.4.3)
     transitivePeerDependencies:
+      - ai
       - bufferutil
       - debug
       - supports-color
       - typescript
       - utf-8-validate
+      - zod
 
   chat@4.26.0:
     dependencies:
@@ -2662,6 +2688,34 @@ snapshots:
       remark-stringify: 11.0.0
       remend: 1.3.0
       unified: 11.0.5
+    transitivePeerDependencies:
+      - supports-color
+
+  chat@4.29.0(zod@4.4.3):
+    dependencies:
+      '@workflow/serde': 4.1.0-beta.2
+      mdast-util-to-string: 4.0.0
+      remark-gfm: 4.0.1
+      remark-parse: 11.0.0
+      remark-stringify: 11.0.0
+      remend: 1.3.0
+      unified: 11.0.5
+    optionalDependencies:
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
+
+  chat@4.31.0(zod@4.4.3):
+    dependencies:
+      '@workflow/serde': 4.1.0-beta.2
+      mdast-util-to-string: 4.0.0
+      remark-gfm: 4.0.1
+      remark-parse: 11.0.0
+      remark-stringify: 11.0.0
+      remend: 1.3.0
+      unified: 11.0.5
+    optionalDependencies:
+      zod: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -2721,7 +2775,7 @@ snapshots:
 
   discord-api-types@0.37.120: {}
 
-  discord-api-types@0.38.48: {}
+  discord-api-types@0.38.49: {}
 
   discord-interactions@4.4.0: {}
 
@@ -2734,7 +2788,7 @@ snapshots:
       '@discordjs/util': 1.2.0
       '@discordjs/ws': 1.2.3
       '@sapphire/snowflake': 3.5.3
-      discord-api-types: 0.38.48
+      discord-api-types: 0.38.49
       fast-deep-equal: 3.1.3
       lodash.snakecase: 4.1.1
       magic-bytes.js: 1.13.0
@@ -2754,12 +2808,12 @@ snapshots:
     dependencies:
       once: 1.4.0
 
-  engine.io-client@6.6.5:
+  engine.io-client@6.6.6:
     dependencies:
       '@socket.io/component-emitter': 3.1.2
       debug: 4.4.3
       engine.io-parser: 5.2.3
-      ws: 8.20.1
+      ws: 8.21.0
       xmlhttprequest-ssl: 2.1.2
     transitivePeerDependencies:
       - bufferutil
@@ -3656,7 +3710,7 @@ snapshots:
     dependencies:
       '@socket.io/component-emitter': 3.1.2
       debug: 4.4.3
-      engine.io-client: 6.6.5
+      engine.io-client: 6.6.6
       socket.io-parser: 4.2.6
     transitivePeerDependencies:
       - bufferutil
@@ -3853,8 +3907,6 @@ snapshots:
   word-wrap@1.2.5: {}
 
   wrappy@1.0.2: {}
-
-  ws@8.20.1: {}
 
   ws@8.21.0: {}
 

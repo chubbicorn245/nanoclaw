@@ -51,6 +51,11 @@ export const MAX_MESSAGES_PER_PROMPT = Math.max(1, parseInt(process.env.MAX_MESS
 // per-claim stuck rule, so this only governs idle reaping. 30 min default.
 export const IDLE_TIMEOUT = parseInt(process.env.IDLE_TIMEOUT || envConfig.IDLE_TIMEOUT || '1800000', 10);
 export const MAX_CONCURRENT_CONTAINERS = Math.max(1, parseInt(process.env.MAX_CONCURRENT_CONTAINERS || '5', 10) || 5);
+// Per-container resource caps, passed through to `docker run`. Default empty =
+// no flag added = today's unbounded behavior (don't OOM existing OSS workloads).
+// Operators opt in: CONTAINER_CPU_LIMIT=2, CONTAINER_MEMORY_LIMIT=8g.
+export const CONTAINER_CPU_LIMIT = process.env.CONTAINER_CPU_LIMIT || '';
+export const CONTAINER_MEMORY_LIMIT = process.env.CONTAINER_MEMORY_LIMIT || '';
 
 // Channels that engage ONLY pre-wired senders. A message from any sender
 // without an existing messaging group is dropped silently — no auto-create,
