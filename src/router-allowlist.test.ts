@@ -49,9 +49,16 @@ vi.mock('./modules/permissions/user-dm.js', () => ({
 const TEST_DIR = '/tmp/nanoclaw-test-router-allowlist';
 
 // imessage is allowlist-only; telegram is not (the contrast channel).
+// NOTE: vi.mock is hoisted above module-scope consts, so the DATA_DIR literal
+// is inlined here rather than referencing TEST_DIR (which isn't initialized at
+// hoist time). Matches the pattern in channel-approval.test.ts.
 vi.mock('./config.js', async () => {
   const actual = await vi.importActual('./config.js');
-  return { ...actual, DATA_DIR: TEST_DIR, ALLOWLIST_ONLY_CHANNELS: new Set(['imessage']) };
+  return {
+    ...actual,
+    DATA_DIR: '/tmp/nanoclaw-test-router-allowlist',
+    ALLOWLIST_ONLY_CHANNELS: new Set(['imessage']),
+  };
 });
 
 function now() {
