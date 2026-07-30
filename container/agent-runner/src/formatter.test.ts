@@ -51,6 +51,15 @@ describe('context timezone header', () => {
     expect(result).toContain(`<context timezone="${TIMEZONE}"`);
   });
 
+  it('includes an authoritative current date in the header (fixes resumed-session stale date)', () => {
+    // Task runs resume a persisted session whose Claude Code system-prompt date
+    // is frozen at creation. The header is regenerated every call from the live
+    // clock, so it must carry today's date to override the stale one.
+    const result = formatMessages([]);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE }); // YYYY-MM-DD
+    expect(result).toContain(`date="${today}`);
+  });
+
   it('header comes before the first <message> block when multiple are present', () => {
     insertMessage('m1', 'chat', { sender: 'Alice', text: 'one' });
     insertMessage('m2', 'chat', { sender: 'Bob', text: 'two' });

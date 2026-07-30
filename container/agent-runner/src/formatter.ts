@@ -132,7 +132,16 @@ export function extractRouting(messages: MessageInRow[]): RoutingContext {
  * Strips routing fields — the agent never sees platform_id, channel_type, thread_id.
  */
 export function formatMessages(messages: MessageInRow[]): string {
-  const header = `<context timezone="${escapeXml(TIMEZONE)}" />\n`;
+  // Current local date + weekday, regenerated every call from the live clock.
+  // This is authoritative "now" for the agent. Task runs resume a persisted
+  // session whose Claude Code system-prompt date is frozen at session creation
+  // (one-day-behind bug); this fresh header overrides that stale date. The
+  // `date` attribute is ISO YYYY-MM-DD plus the weekday, matching the agent's
+  // own date-accuracy convention.
+  const nowLocal = new Date();
+  const isoDate = nowLocal.toLocaleDateString('en-CA', { timeZone: TIMEZONE }); // YYYY-MM-DD
+  const weekday = nowLocal.toLocaleDateString('en-US', { timeZone: TIMEZONE, weekday: 'long' });
+  const header = `<context timezone="${escapeXml(TIMEZONE)}" date="${isoDate}, ${weekday}" />\n`;
   if (messages.length === 0) return header;
 
   // Group by kind
