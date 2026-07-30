@@ -17,6 +17,7 @@ const envConfig = readEnvFile([
   'DEFAULT_AGENT_PROVIDER',
   'CONTAINER_CPU_LIMIT',
   'CONTAINER_MEMORY_LIMIT',
+  'CONTAINER_PIDS_LIMIT',
   'NANOCLAW_EGRESS_LOCKDOWN',
   'NANOCLAW_EGRESS_NETWORK',
   'ONECLI_GATEWAY_CONTAINER',
@@ -101,6 +102,13 @@ export const ALLOWLIST_ONLY_CHANNELS = new Set(
     .map((s) => s.trim())
     .filter(Boolean),
 );
+
+// Fork-bomb backstop. cgroups v2 counts THREADS, not processes, and Chromium is
+// thread-hungry — a browsing agent with several tabs open runs into the high
+// hundreds. Keep well above that; too low a cap kills the container mid-turn or
+// blocks it from spawning subprocesses, and neither is reported as a PID limit.
+// Empty = no cap.
+export const CONTAINER_PIDS_LIMIT = process.env.CONTAINER_PIDS_LIMIT ?? envConfig.CONTAINER_PIDS_LIMIT ?? '2048';
 
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
