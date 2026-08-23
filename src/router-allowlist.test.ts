@@ -36,13 +36,12 @@ vi.mock('./delivery.js', () => ({
 vi.mock('./modules/permissions/user-dm.js', () => ({
   ensureUserDm: vi.fn(async (userId: string) => {
     const { getDb } = await import('./db/connection.js');
-    return getDb()
-      .prepare(
-        `SELECT mg.* FROM messaging_groups mg
-           JOIN user_dms ud ON ud.messaging_group_id = mg.id
-          WHERE ud.user_id = ?`,
-      )
-      .get(userId);
+    return getDb().get(
+      `SELECT mg.* FROM messaging_groups mg
+         JOIN user_dms ud ON ud.messaging_group_id = mg.id
+        WHERE ud.user_id = ?`,
+      userId,
+    );
   }),
 }));
 
@@ -68,18 +67,24 @@ function now() {
 beforeEach(async () => {
   if (fs.existsSync(TEST_DIR)) fs.rmSync(TEST_DIR, { recursive: true });
   fs.mkdirSync(TEST_DIR, { recursive: true });
-  runMigrations(initTestDb());
+  await runMigrations(await initTestDb());
 
   await import('./modules/permissions/index.js'); // register hooks
 
-  createAgentGroup({ id: 'ag-1', name: 'Nano', folder: 'nano', agent_provider: null, created_at: now() });
+  await createAgentGroup({ id: 'ag-1', name: 'Nano', folder: 'nano', agent_provider: null, created_at: now() });
 
   // Owner with a reachable DM, so an escalation WOULD fire if not suppressed.
-  upsertUser({ id: 'telegram:owner', kind: 'telegram', display_name: 'Owner', created_at: now() });
-  grantRole({ user_id: 'telegram:owner', role: 'owner', agent_group_id: null, granted_by: null, granted_at: now() });
+  await upsertUser({ id: 'telegram:owner', kind: 'telegram', display_name: 'Owner', created_at: now() });
+  await grantRole({
+    user_id: 'telegram:owner',
+    role: 'owner',
+    agent_group_id: null,
+    granted_by: null,
+    granted_at: now(),
+  });
 
   const { createMessagingGroup } = await import('./db/messaging-groups.js');
-  createMessagingGroup({
+  await createMessagingGroup({
     id: 'mg-dm-owner',
     channel_type: 'telegram',
     platform_id: 'dm-owner',
@@ -89,15 +94,19 @@ beforeEach(async () => {
     created_at: now(),
   });
   const { getDb } = await import('./db/connection.js');
-  getDb()
-    .prepare(`INSERT INTO user_dms (user_id, channel_type, messaging_group_id, resolved_at) VALUES (?, ?, ?, ?)`)
-    .run('telegram:owner', 'telegram', 'mg-dm-owner', now());
+  await getDb().run(
+    `INSERT INTO user_dms (user_id, channel_type, messaging_group_id, resolved_at) VALUES (?, ?, ?, ?)`,
+    'telegram:owner',
+    'telegram',
+    'mg-dm-owner',
+    now(),
+  );
 
   deliverMock.mockClear();
 });
 
-afterEach(() => {
-  closeDb();
+afterEach(async () => {
+  await closeDb();
   if (fs.existsSync(TEST_DIR)) fs.rmSync(TEST_DIR, { recursive: true });
 });
 
@@ -123,10 +132,10 @@ describe('ALLOWLIST_ONLY_CHANNELS', () => {
     await new Promise((r) => setTimeout(r, 10));
 
     expect(deliverMock).not.toHaveBeenCalled();
-    expect(getMessagingGroupByPlatform('imessage', 'imessage:+15550009999')).toBeFalsy();
+    expect(await getMessagingGroupByPlatform('imessage', 'imessage:+15550009999')).toBeFalsy();
     const { getDb } = await import('./db/connection.js');
-    const count = (getDb().prepare('SELECT COUNT(*) AS c FROM pending_channel_approvals').get() as { c: number }).c;
-    expect(count).toBe(0);
+    const row = await getDb().get<{ c: number }>('SELECT COUNT(*) AS c FROM pending_channel_approvals');
+    expect(row?.c).toBe(0);
   });
 
   it('still escalates an unwired sender on a non-allowlisted channel (guard is scoped)', async () => {
@@ -136,7 +145,7 @@ describe('ALLOWLIST_ONLY_CHANNELS', () => {
 
     expect(deliverMock).toHaveBeenCalledTimes(1);
     const { getDb } = await import('./db/connection.js');
-    const count = (getDb().prepare('SELECT COUNT(*) AS c FROM pending_channel_approvals').get() as { c: number }).c;
-    expect(count).toBe(1);
+    const row = await getDb().get<{ c: number }>('SELECT COUNT(*) AS c FROM pending_channel_approvals');
+    expect(row?.c).toBe(1);
   });
 });
