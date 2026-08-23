@@ -22,7 +22,12 @@ const roots: string[] = [];
 let previousUpdateDir: string | undefined;
 
 function temp(prefix: string): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  // realpathSync canonicalizes the path so it matches what the transaction
+  // stores internally. On macOS os.tmpdir() is /var/folders/… (a symlink to
+  // /private/var/…); without this, hasSafeStatePaths' path.resolve comparison
+  // (which does not deref symlinks) sees a /var vs /private/var mismatch and
+  // rejects the state as "unsafe paths".
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), prefix)));
   roots.push(root);
   return root;
 }
