@@ -101,6 +101,41 @@ export const SDK_DISALLOWED_TOOLS = [
   'ReportFindings',
 ];
 
+// Built-in Claude Code skills that cannot work inside a NanoClaw container.
+// Blocking the *tools* above is not enough: a skill is reached through the
+// `Skill` tool, which is allowlisted, so the skill's own instructions are what
+// the agent follows.
+//
+// - schedule: drives claude.ai cloud routines ("scheduled agents"). Those need
+//   a real claude.ai account session, and the container has none by design —
+//   OneCLI rewrites the Authorization header for model calls to
+//   api.anthropic.com, while the container itself carries a placeholder
+//   CLAUDE_CODE_OAUTH_TOKEN (see src/providers/claude.ts on the host). A
+//   claude.ai account call has nothing to rewrite it, so every attempt dies at
+//   "Unable to get organization UUID" and the user's reminder is silently
+//   never scheduled. `ncl tasks` is the scheduler that works here.
+const SDK_DISALLOWED_SKILLS: Record<string, string> = {
+  schedule:
+    "The '/schedule' skill is not available in this environment — it schedules " +
+    'cloud routines on claude.ai, which this container cannot reach. Use ' +
+    '`ncl tasks create` instead (see the Task scheduling section of your ' +
+    'instructions). The task is not scheduled until that command returns a ' +
+    'series_id; if it does not, tell the user rather than reporting success.',
+};
+
+/**
+ * Block reason for a skill the container cannot run, or null to allow.
+ * Accepts the raw `Skill` tool argument: tolerates plugin qualification
+ * (`plugin:schedule`), casing, and surrounding whitespace, and allows
+ * anything that is not a non-empty string.
+ */
+export function isDisallowedSkill(skill: unknown): string | null {
+  if (typeof skill !== 'string') return null;
+  const bare = skill.trim().toLowerCase().split(':').pop() ?? '';
+  if (!bare) return null;
+  return SDK_DISALLOWED_SKILLS[bare] ?? null;
+}
+
 // Tool allowlist for NanoClaw agent containers. MCP-tool entries are derived
 // at the call site from the registered `mcpServers` map so that any server
 // added via `add_mcp_server` (or wired in container.json directly) is
@@ -242,6 +277,25 @@ const preToolUseHook: HookCallback = async (input) => {
       decision: 'block',
       stopReason: `Tool '${toolName}' is not available in this environment — use the nanoclaw equivalent.`,
     } as unknown as ReturnType<HookCallback>;
+  }
+  if (toolName === 'Skill') {
+    const skillBlockReason = isDisallowedSkill(i.tool_input?.skill);
+    if (skillBlockReason) {
+      // Unlike SDK_DISALLOWED_TOOLS, this hook is the *only* thing stopping the
+      // call — a skill rides in on the allowlisted `Skill` tool, so there is no
+      // `disallowedTools` entry backing it up. Emit both the PreToolUse-specific
+      // deny and the legacy top-level block so the refusal does not depend on
+      // which one the SDK honors.
+      return {
+        decision: 'block',
+        stopReason: skillBlockReason,
+        hookSpecificOutput: {
+          hookEventName: 'PreToolUse',
+          permissionDecision: 'deny',
+          permissionDecisionReason: skillBlockReason,
+        },
+      } as unknown as ReturnType<HookCallback>;
+    }
   }
   // Bash exposes its timeout via the tool_input.timeout field (ms). Any other
   // tool: no declared timeout.

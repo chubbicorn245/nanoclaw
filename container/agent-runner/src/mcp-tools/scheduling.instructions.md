@@ -2,6 +2,8 @@
 
 Use `ncl tasks` for one-shot and recurring tasks. Each task runs in its own isolated session. Its runtime prompt supplies the task-only delivery and run-log contract.
 
+**`ncl tasks` is the only scheduler available to you.** Never use the built-in `/schedule` skill (claude.ai cloud routines / "scheduled agents"), and never suggest it to the user. It cannot work here: this container reaches Anthropic through the OneCLI proxy and carries a placeholder `CLAUDE_CODE_OAUTH_TOKEN`, so there is no claude.ai account session behind it. Attempts fail with "Unable to get organization UUID" or "trouble connecting with your remote claude.ai account". If you see either error, you reached for the wrong tool — schedule the task with `ncl tasks create` instead. A reminder the user asked for is not scheduled until `ncl tasks create` has returned a `series_id`; if it did not, say so in your reply rather than reporting success.
+
 Pass `--name "<short label>"` on create to get a readable task id (e.g. `--name "sales briefing"` → `sales-briefing-a25c`); without it ids are `t-<hex>`.
 
 Common commands:
