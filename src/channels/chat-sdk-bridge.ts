@@ -454,6 +454,18 @@ export function appendRawText(
 }
 
 /**
+ * Cap on inbound attachment bytes we download and inline (base64) into a
+ * prompt. Overridable via MAX_INBOUND_ATTACHMENT_BYTES; defaults to 10 MB.
+ * Anything larger is left as a url-only reference, so a large or repeated
+ * upload from anyone who can message the bot can't blow up the POST body or
+ * the prompt context.
+ */
+function defaultMaxInboundAttachmentBytes(): number {
+  const v = Number(process.env.MAX_INBOUND_ATTACHMENT_BYTES);
+  return Number.isFinite(v) && v > 0 ? v : 10 * 1024 * 1024;
+}
+
+/**
  * Serialize inbound attachments, downloading their bytes so the host can stage
  * them to the session inbox. Two adapter shapes exist:
  *
@@ -467,18 +479,6 @@ export function appendRawText(
  * download path yields bytes. Both paths cap the bytes they inline (see
  * `maxBytes`); oversized attachments stay metadata/url-only.
  */
-/**
- * Cap on inbound attachment bytes we download and inline (base64) into a
- * prompt. Overridable via MAX_INBOUND_ATTACHMENT_BYTES; defaults to 10 MB.
- * Anything larger is left as a url-only reference, so a large or repeated
- * upload from anyone who can message the bot can't blow up the POST body or
- * the prompt context.
- */
-function defaultMaxInboundAttachmentBytes(): number {
-  const v = Number(process.env.MAX_INBOUND_ATTACHMENT_BYTES);
-  return Number.isFinite(v) && v > 0 ? v : 10 * 1024 * 1024;
-}
-
 export async function enrichAttachments(
   attachments: Attachment[],
   maxBytes: number = defaultMaxInboundAttachmentBytes(),
